@@ -1,0 +1,21 @@
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+INFOJS_OPT: view:info toc:t
+#+OPTIONS: H:2 num:t toc:t
+#+BEGIN_HTML
+---
+layout: post
+title:  First Post
+tags: Random
+---
+#+END_HTML
+*** Categories         : Advanced Math
+
+
+** Math:
+
+   #+BEGIN_SRC emacs-lisp
+       (defun org-xor (a b)
+          "Exclusive or."
+          (if a (not b) b))
+   #+END_SRC
