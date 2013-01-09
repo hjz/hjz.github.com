@@ -1,0 +1,3 @@
+[submodule ".themes/slash"]
+	path = .themes/slash
+	url = git@github.com:hjz/Octopress-Theme-Slash.git
