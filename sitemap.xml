@@ -2,15 +2,19 @@
 <urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>
     <url>
         <loc>http://hjz.github.com/blog/2013/01/08/angularjs-with-play-2-and-coffeescript/</loc>
-        <lastmod>2013-01-08T16:34:18-08:00</lastmod>
+        <lastmod>2013-01-09T13:50:21-08:00</lastmod>
     </url>
     <url>
         <loc>http://hjz.github.com/blog/archives/</loc>
-        <lastmod>2013-01-08T16:34:18-08:00</lastmod>
+        <lastmod>2013-01-09T13:50:21-08:00</lastmod>
     </url>
     <url>
         <loc>http://hjz.github.com/</loc>
-        <lastmod>2013-01-08T16:34:18-08:00</lastmod>
+        <lastmod>2013-01-09T13:50:21-08:00</lastmod>
+    </url>
+    <url>
+        <loc>http://hjz.github.com/projects/</loc>
+        <lastmod>2013-01-09T13:50:21-08:00</lastmod>
     </url>
     <url>
         <loc>http://hjz.github.com/robots.txt</loc>
