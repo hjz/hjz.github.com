@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: AngularJS | Justin's words of random]]></title>
+  <link href="http://hjz.github.com/blog/categories/angularjs/atom.xml" rel="self"/>
+  <link href="http://hjz.github.com/"/>
+  <updated>2013-01-08T16:36:14-08:00</updated>
+  <id>http://hjz.github.com/</id>
+  <author>
+    <name><![CDATA[Justin Zhu]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[AngularJS with Play 2 and CoffeeScript]]></title>
+    <link href="http://hjz.github.com/blog/2013/01/08/angularjs-with-play-2-and-coffeescript/"/>
+    <updated>2013-01-08T13:55:00-08:00</updated>
+    <id>http://hjz.github.com/blog/2013/01/08/angularjs-with-play-2-and-coffeescript</id>
+    <content type="html"><![CDATA[<p>``` ruby Discover if a number is prime http://www.noulakaz.net/weblog/2007/03/18/a-regular-expression-to-check-for-prime-numbers/ Source Article
+class Fixnum
+  def prime?</p>
+
+<pre><code>('1' * self) !~ /^1?$|^(11+?)\1+$/
+</code></pre>
+
+<p>  end
+end
+```</p>
+
+<p><div><script src='https://gist.github.com/996818.js'></script>
+<noscript><pre><code>@@ -590,7 +590,7 @@ class SpritesTest &lt; Test::Unit::TestCase
+  it &quot;should generate a sprite from nested folders&quot; do
+    css = render &lt;&lt;-SCSS
+-     @import &quot;nested/*.png&quot;;
++     @import &quot;nested/**/*.png&quot;;
+      @include all-nested-sprites;
+    SCSS
+    assert_correct css, &lt;&lt;-CSS</code></pre></noscript></div>
+</p>
+
+<!--more-->
+
+
+<p><video width='640' height='320' preload='none' controls poster=' http://s3.imathis.com/video/zero-to-fancy-buttons.png'><source src='http://s3.imathis.com/video/zero-to-fancy-buttons.mp4' type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'/></video></p>
+
+<p>File /Users/hjz/code/octopress/source/downloads/code/test.js could not be found</p>
+]]></content>
+  </entry>
+  
+</feed>
