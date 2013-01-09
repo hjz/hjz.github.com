@@ -1,19 +1,19 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>
     <url>
-        <loc>http://hjz.github.com/blog/2013/01/08/angularjs-with-play-2-and-coffeescript/</loc>
+        <loc>http://zhumour.com/blog/2013/01/08/angularjs-with-play-2-and-coffeescript/</loc>
         <lastmod>2013-01-08T13:58:13-08:00</lastmod>
     </url>
     <url>
-        <loc>http://hjz.github.com/blog/archives/</loc>
+        <loc>http://zhumour.com/blog/archives/</loc>
         <lastmod>2013-01-08T13:58:13-08:00</lastmod>
     </url>
     <url>
-        <loc>http://hjz.github.com/</loc>
+        <loc>http://zhumour.com/</loc>
         <lastmod>2013-01-08T13:58:13-08:00</lastmod>
     </url>
     <url>
-        <loc>http://hjz.github.com/robots.txt</loc>
+        <loc>http://zhumour.com/robots.txt</loc>
         <lastmod>2013-01-08T12:13:32-08:00</lastmod>
     </url>
 </urlset>

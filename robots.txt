@@ -1,4 +1,4 @@
 User-agent: *
 Disallow: 
 
-Sitemap: http://hjz.github.com/sitemap.xml 
+Sitemap: http://zhumour.com/sitemap.xml 
