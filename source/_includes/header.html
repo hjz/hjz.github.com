@@ -1,10 +1,21 @@
-<div class="profilepic">	
-	<img src="/images/dp.jpg" alt="Profile Picture" style="width: 160px;">
-</div>
 <h1><a href="{{ root_url }}/">{{ site.title }}</a></h1>
-<p class="subtitle">{{ site.subtitle }}</p>
 <nav id="main-nav">{% include navigation.html %}</nav>
-<nav id="sub-nav">
+<nav id="mobile-nav">
+	<div class="alignleft menu">
+		<a class="button">Menu</a>
+		<div class="container">{% include navigation.html %}</div>
+	</div>
+	<div class="alignright search">
+		<a class="button"></a>
+		<div class="container">
+			<form action="{{ site.simple_search }}" method="get">
+				<input type="text" name="q" results="0">
+				<input type="hidden" name="q" value="site:{{ site.url | shorthand_url }}">
+			</form>
+		</div>
+	</div>
+</nav>
+<nav id="sub-nav" class="alignright">
 	<div class="social">
 		{% if site.facebook_user %}
 		<a class="facebook" href="http://www.facebook.com/{{ site.facebook_user }}" title="Facebook">Facebook</a>
@@ -18,6 +29,12 @@
 		{% if site.github_user %}
 		<a class="github" href="https://github.com/{{ site.github_user }}" title="GitHub">GitHub</a>
 		{% endif %}
+    {% if site.pinboard_user %}
+    <a class="pinboard" href="https://pinboard.in/u:{{ site.pinboard_user }}" title="Pinboard">Pinboard</a>
+    {% endif %}
+		{% if site.coderwall_user %}
+		<a class="coderwall" href="https://coderwall.com/{{ site.coderwall_user }}" title="Coderwall">Coderwall</a>
+		{% endif %}
 		{% if site.linkedin_user %}
 		<a class="linkedin" href="http://www.linkedin.com/in/{{ site.linkedin_user }}">LinkedIn</a>
 		{% endif %}
@@ -27,12 +44,13 @@
 		{% if site.delicious_user %}
 		<a class="delicious" href="http://delicious.com/{{ site.delicious_user }}" title="Delicious">Delicious</a>
 		{% endif %}
-		{% if site.pinboard_user %}
-		<a class="pinboard" href="https://pinboard.in/u:{{ site.pinboard_user }}" title="Pinboard">Pinboard</a>
-		{% endif %}
 		{% if site.subscribe_rss %}
 		<a class="rss" href="{{ site.subscribe_rss }}" title="RSS">RSS</a>
 		{% endif %}
 	</div>
+	<form class="search" action="{{ site.simple_search }}" method="get">
+		<input class="alignright" type="text" name="q" results="0">
+		<input type="hidden" name="q" value="site:{{ site.url | shorthand_url }}">
+	</form>
 </nav>
 {% include custom/header.html %}
