@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Justin's words of random]]></title>
-  <link href="http://zhumour.com/atom.xml" rel="self"/>
-  <link href="http://zhumour.com/"/>
-  <updated>2013-01-08T16:08:22-08:00</updated>
-  <id>http://zhumour.com/</id>
+  <link href="http://hjz.github.com/atom.xml" rel="self"/>
+  <link href="http://hjz.github.com/"/>
+  <updated>2013-01-08T16:11:10-08:00</updated>
+  <id>http://hjz.github.com/</id>
   <author>
     <name><![CDATA[Justin Zhu]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[AngularJS with Play 2 and CoffeeScript]]></title>
-    <link href="http://zhumour.com/blog/2013/01/08/angularjs-with-play-2-and-coffeescript/"/>
+    <link href="http://hjz.github.com/blog/2013/01/08/angularjs-with-play-2-and-coffeescript/"/>
     <updated>2013-01-08T13:55:00-08:00</updated>
-    <id>http://zhumour.com/blog/2013/01/08/angularjs-with-play-2-and-coffeescript</id>
+    <id>http://hjz.github.com/blog/2013/01/08/angularjs-with-play-2-and-coffeescript</id>
     <content type="html"><![CDATA[
 ]]></content>
   </entry>
