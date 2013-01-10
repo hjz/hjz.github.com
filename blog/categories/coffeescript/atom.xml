@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Category: CoffeeScript | Justin's Words of Random]]></title>
+  <title><![CDATA[Category: CoffeeScript | Justin's words of random]]></title>
   <link href="http://hjz.github.com/blog/categories/coffeescript/atom.xml" rel="self"/>
   <link href="http://hjz.github.com/"/>
-  <updated>2013-01-10T01:15:39-08:00</updated>
+  <updated>2013-01-10T01:19:30-08:00</updated>
   <id>http://hjz.github.com/</id>
   <author>
     <name><![CDATA[Justin Zhu]]></name>
