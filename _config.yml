@@ -3,8 +3,8 @@
 # ----------------------- #
 
 url: http://hjz.github.com
-title: "Justin's words of random"
-subtitle: "Tech, Startups, Philosophy"
+title: "Justin's Words of Random"
+subtitle: "Software :: Startups :: Philosophy"
 author: Justin Zhu
 simple_search: http://google.com/search
 description:
@@ -89,7 +89,7 @@ delicious_user:
 delicious_count: 3
 
 # Disqus Comments
-disqus_short_name:
+disqus_short_name: zhum
 disqus_show_comment_count: false
 
 # Google Analytics
