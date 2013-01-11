@@ -85,7 +85,7 @@ ItemsCtrl = ($scope, $http) ->
 
 ```
 
-The `updateItems` method uses AngularJS [$http](http://docs.angularjs.org/api/ng.$http) service which wraps ajax calls in [promises](http://docs.angularjs.org/api/ng.$q). It is similar in concept to a `scala.concurrent.Future` but with a much simpiler api. You can actually assign AngularJS promises to variables bound in the view, which cause a re-render asynchronously once the promise is resolved.
+The `updateItems` method uses AngularJS [$http](http://docs.angularjs.org/api/ng.$http) service which wraps ajax calls in [promises](http://docs.angularjs.org/api/ng.$q). It is similar in concept to a `scala.concurrent.Future` but with a much simpiler api. You can actually assign AngularJS promises to variables bound in the view that will re-render asynchronously once the promise is resolved.
 
 On the server side, we can simply parse the Json back to the case class that it rendered from:
 
@@ -107,4 +107,4 @@ object Application extends Controller {
 
 ### How to make all this easier
 
-With Scala 2.10 macros, you could imagine automatically creating the JS case classes from a subset of fields in the from the database model and generating customizable CRUD controllers.
+With Scala 2.10 macros, you could imagine automatically creating the JS case classes from a subset of fields from the database model and generating customizable CRUD controllers.
