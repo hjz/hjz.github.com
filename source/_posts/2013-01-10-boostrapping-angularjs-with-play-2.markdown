@@ -35,8 +35,6 @@ The example above clears the input text when the element is focused. I'll touch 
 
 ### Bootstrapping AngularJS
 
-<!--more-->
-
 Play is a rails inspired MVC framework built on the JVM. It has APIs for both Scala and Java and uses class reloading to quickly surface changes in the browser. A nice feature is the templating system that uses Scala to generate html. A template gets compiled to a Scala object and can be called from controllers, with the input type checked.
 
 One pattern I've employed is bootstrapping AngularJS controllers in the template:
@@ -104,6 +102,8 @@ object Application extends Controller {
   }
 }
 ```
+
+<!--more-->
 
 ### How to make all this easier
 
