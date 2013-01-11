@@ -4,7 +4,7 @@
   <title><![CDATA[Category: AngularJS | Justin's words of random]]></title>
   <link href="http://hjz.github.com/blog/categories/angularjs/atom.xml" rel="self"/>
   <link href="http://hjz.github.com/"/>
-  <updated>2013-01-10T01:19:30-08:00</updated>
+  <updated>2013-01-10T16:56:56-08:00</updated>
   <id>http://hjz.github.com/</id>
   <author>
     <name><![CDATA[Justin Zhu]]></name>
@@ -14,38 +14,119 @@
 
   
   <entry>
-    <title type="html"><![CDATA[AngularJS with Play 2 and CoffeeScript]]></title>
-    <link href="http://hjz.github.com/blog/2013/01/08/angularjs-with-play-2-and-coffeescript/"/>
-    <updated>2013-01-08T13:55:00-08:00</updated>
-    <id>http://hjz.github.com/blog/2013/01/08/angularjs-with-play-2-and-coffeescript</id>
-    <content type="html"><![CDATA[<p>``` ruby Discover if a number is prime http://www.noulakaz.net/weblog/2007/03/18/a-regular-expression-to-check-for-prime-numbers/ Source Article
-class Fixnum
-  def prime?</p>
+    <title type="html"><![CDATA[Bootstrapping AngularJS with Play 2]]></title>
+    <link href="http://hjz.github.com/blog/2013/01/10/boostrapping-angularjs-with-play-2/"/>
+    <updated>2013-01-10T13:55:00-08:00</updated>
+    <id>http://hjz.github.com/blog/2013/01/10/boostrapping-angularjs-with-play-2</id>
+    <content type="html"><![CDATA[<h2>AngularJS Primer</h2>
 
-<pre><code>('1' * self) !~ /^1?$|^(11+?)\1+$/
-</code></pre>
+<p><a href="http://angularjs.org">AngularJS</a> is a javascript framework by Google that makes 2-way data binding between DOM elements and JS objects seamless.</p>
 
-<p>  end
-end
-```</p>
+<p>I've always been repulsed by the amount of hacks and lack of abstractions prevalent in front-end development. AngularJS follows the Model View ViewModel pattern which aims to separate view code from application logic. This is achiveved through a ViewModel which exposes and connects objects in the model to elements in the view. For AngularJS, this is the <code>$scope</code> object.</p>
 
-<p><div><script src='https://gist.github.com/996818.js'></script>
-<noscript><pre><code>@@ -590,7 +590,7 @@ class SpritesTest &lt; Test::Unit::TestCase
-  it &quot;should generate a sprite from nested folders&quot; do
-    css = render &lt;&lt;-SCSS
--     @import &quot;nested/*.png&quot;;
-+     @import &quot;nested/**/*.png&quot;;
-      @include all-nested-sprites;
-    SCSS
-    assert_correct css, &lt;&lt;-CSS</code></pre></noscript></div>
-</p>
+<p>For example, to bind an input field to a variable <code>searchModel</code> on the scope:</p>
+
+<p>```html
+<input type="text" ng-model="searchModel"></p>
+
+<p>```</p>
+
+<p>Any change to the input field is reflected in <code>$scope.searchModel</code> and vice versa.</p>
+
+<p>Another neat feature of AngularJS is the ability to create <a href="http://docs.angularjs.org/guide/directive">directives</a> that extend html. For instance you can create an <code>on-focus</code> directive that calls a method when an element is focused.</p>
+
+<p><code>
+&lt;input type="text" ng-model="searchModel" on-focus="searchModel = ''"&gt;
+</code></p>
+
+<p>The example above clears the input text when the element is focused. I'll touch more on creating directives in a future post.</p>
+
+<h2>Integration with Play 2 framework</h2>
+
+<h3>Bootstrapping AngularJS</h3>
 
 <!--more-->
 
 
-<p><video width='640' height='320' preload='none' controls poster=' http://s3.imathis.com/video/zero-to-fancy-buttons.png'><source src='http://s3.imathis.com/video/zero-to-fancy-buttons.mp4' type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'/></video></p>
+<p>Play is a rails inspired MVC framework built on the JVM. It has APIs for both Scala and Java and uses class reloading to quickly surface changes in the browser. A nice feature is the templating system that uses Scala to generate html. A template gets compiled to a Scala object and can be called from controllers, with the input type checked.</p>
 
-<p>File /Users/hjz/code/octopress/source/downloads/code/test.js could not be found</p>
+<p>One pattern I've employed is bootstrapping AngularJS controllers in the template:</p>
+
+<p>```html items.scala.html
+@(items: Seq[JSItem])</p>
+
+<p>@import com.codahale.jerkson.Json</p>
+
+<script>
+var items = @Html(Json.generate(items));
+</script>
+
+
+<p>@main("Items Page") {</p>
+
+<div ng-controller="ItemsCtrl">
+   There are {{items.length}} items
+</div>
+
+
+<p>}
+```</p>
+
+<p>Then in the controller on the client:</p>
+
+<p>```coffeescript controllers.cofffee
+ItemsCtrl = ($scope) ->
+  $scope.items = items</p>
+
+<p>```</p>
+
+<p>Notice the input to template is a sequence of JSItems, which is a case class. This is just a compact version of the Item model that gets passed in to the client. We generate the items as json using jerkson which creates objects with the same fields as those in a case class. <code>@Html</code> tells Play not to escape the output and render it literally.</p>
+
+<h3>Updating the model on the server</h3>
+
+<p>Typically, we want the ability to update the model on the client side and update the server:</p>
+
+<p>```coffeescript controllers.cofffee
+ItemsCtrl = ($scope, $http) ->
+  $scope.items = items</p>
+
+<p>  $scope.updateItems = -></p>
+
+<pre><code>$http.post '/items', $scope.items
+  .success -&gt;
+    # Success callback
+  .error (data, status)-&gt;
+    $console.log "Failed with status #{status}, data: #{status}"
+</code></pre>
+
+<p>```</p>
+
+<p>The <code>updateItems</code> method uses AngularJS <a href="http://docs.angularjs.org/api/ng.$http">$http</a> service which wraps ajax calls in <a href="http://docs.angularjs.org/api/ng.$q">promises</a>. It is similar in concept to a <code>scala.concurrent.Future</code> but with a much simpiler api. You can actually assign AngularJS promises to variables bound in the view, which cause a re-render asynchronously once the promise is resolved.</p>
+
+<p>On the server side, we can simply parse the Json back to the case class that it rendered from:</p>
+
+<p><code>scala routes
+POST /items Application.updateItems
+</code></p>
+
+<p>```scala Application.scala
+import com.codahale.jerkson.Json</p>
+
+<p>object Application extends Controller {
+  def updateItems = Action { request =></p>
+
+<pre><code>val json = request.body.asJson.get.toString()
+val items = Json.parse[Seq[Item]](json)
+...
+</code></pre>
+
+<p>  }
+}
+```</p>
+
+<h3>How to make all this easier</h3>
+
+<p>With Scala 2.10 macros, you could imagine automatically creating the JS case classes from a subset of fields in the from the database model and generating customizable CRUD controllers.</p>
 ]]></content>
   </entry>
   

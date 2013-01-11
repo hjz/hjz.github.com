@@ -7,13 +7,7 @@
 	<meta name="author" content="Justin Zhu">
 
 	
-	<meta name="description" content="Discover if a number is primeSource Article1
-2
-3
-4
-5
-class Fixnum def prime? (&#39;1&#39; * self) !~ /^1?$|^(11+?)\1+$/ end
-end @@ -590,7 +590,7 @@ &hellip;">
+	<meta name="description" content="AngularJS Primer AngularJS is a javascript framework by Google that makes 2-way data binding between DOM elements and JS objects seamless. I&#8217; &hellip;">
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
@@ -103,42 +97,42 @@ end @@ -590,7 +590,7 @@ &hellip;">
     <article class="post">
 	<h2 class="title">
 		
-		<a href="/blog/2013/01/08/angularjs-with-play-2-and-coffeescript/">
+		<a href="/blog/2013/01/10/boostrapping-angularjs-with-play-2/">
 		
-			AngularJS With Play 2 and CoffeeScript</a>
+			Bootstrapping AngularJS With Play 2</a>
 	</h2>
 	<div class="entry-content">
-		<figure class='code'><figcaption><span>Discover if a number is prime</span><a href='http://www.noulakaz.net/weblog/2007/03/18/a-regular-expression-to-check-for-prime-numbers/'>Source Article</a></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Fixnum</span>
-</span><span class='line'>  <span class="k">def</span> <span class="nf">prime?</span>
-</span><span class='line'>    <span class="p">(</span><span class="s1">&#39;1&#39;</span> <span class="o">*</span> <span class="nb">self</span><span class="p">)</span> <span class="o">!~</span> <span class="sr">/^1?$|^(11+?)\1+$/</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
+		<h2>AngularJS Primer</h2>
+
+<p><a href="http://angularjs.org">AngularJS</a> is a javascript framework by Google that makes 2-way data binding between DOM elements and JS objects seamless.</p>
+
+<p>I&#8217;ve always been repulsed by the amount of hacks and lack of abstractions prevalent in front-end development. AngularJS follows the Model View ViewModel pattern which aims to separate view code from application logic. This is achiveved through a ViewModel which exposes and connects objects in the model to elements in the view. For AngularJS, this is the <code>$scope</code> object.</p>
+
+<p>For example, to bind an input field to a variable <code>searchModel</code> on the scope:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;text&quot;</span> <span class="na">ng-model=</span><span class="s">&quot;searchModel&quot;</span><span class="nt">&gt;</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
+<p>Any change to the input field is reflected in <code>$scope.searchModel</code> and vice versa.</p>
+
+<p>Another neat feature of AngularJS is the ability to create <a href="http://docs.angularjs.org/guide/directive">directives</a> that extend html. For instance you can create an <code>on-focus</code> directive that calls a method when an element is focused.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;text&quot;</span> <span class="na">ng-model=</span><span class="s">&quot;searchModel&quot;</span> <span class="na">on-focus=</span><span class="s">&quot;searchModel = &#39;&#39;&quot;</span><span class="nt">&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
-<div><script src='https://gist.github.com/996818.js'></script>
-<noscript><pre><code>@@ -590,7 +590,7 @@ class SpritesTest &lt; Test::Unit::TestCase
-  it &quot;should generate a sprite from nested folders&quot; do
-    css = render &lt;&lt;-SCSS
--     @import &quot;nested/*.png&quot;;
-+     @import &quot;nested/**/*.png&quot;;
-      @include all-nested-sprites;
-    SCSS
-    assert_correct css, &lt;&lt;-CSS</code></pre></noscript></div>
+<p>The example above clears the input text when the element is focused. I&#8217;ll touch more on creating directives in a future post.</p>
 
+<h2>Integration with Play 2 framework</h2>
 
-
+<h3>Bootstrapping AngularJS</h3>
 
 
 		
-		<a href="/blog/2013/01/08/angularjs-with-play-2-and-coffeescript/" class="more-link">Read on &rarr;</a>
+		<a href="/blog/2013/01/10/boostrapping-angularjs-with-play-2/" class="more-link">Read on &rarr;</a>
 	</div>
 
 
@@ -155,7 +149,7 @@ end @@ -590,7 +590,7 @@ &hellip;">
   
 
 
-<time datetime="2013-01-08T13:55:00-08:00" pubdate data-updated="true">Jan 8<span>th</span>, 2013</time></div>
+<time datetime="2013-01-10T13:55:00-08:00" pubdate data-updated="true">Jan 10<span>th</span>, 2013</time></div>
 	<div class="tags">
 
 
