@@ -37,9 +37,9 @@ The example above clears the input text when the element is focused. I'll touch 
 
 <!--more-->
 
-Play is a rails inspired MVC framework built on the JVM. It has APIs for both Scala and Java and uses class reloading to quickly surface changes in the browser. One feature is the templating system that uses Scala. A html template gets compiled to a Scala object and can be called from controllers, with the input type checked.
+Play is a rails inspired MVC framework built on the JVM. It has APIs for both Scala and Java and uses class reloading to quickly surface changes in the browser. A nice feature is the templating system that uses Scala to generate html. A template gets compiled to a Scala object and can be called from controllers, with the input type checked.
 
-One pattern I've employed is bootstrapping AngularJS in the template:
+One pattern I've employed is bootstrapping AngularJS controllers in the template:
 
 ```html items.scala.html
 @(items: Seq[JSItem])
@@ -51,8 +51,8 @@ var items = @Html(Json.generate(items));
 </script>
 
 @main("Items Page") {
-<div class="container" ng-controller="ItemsCtrl">
-   There are {{items.length}} items
+<div ng-controller="ItemsCtrl">
+   There are {% raw %}{{items.length}}{% endraw %} items
 </div>
 }
 ```
@@ -66,11 +66,11 @@ ItemsCtrl = ($scope) ->
 ```
 
 
-Notice the input to template is a sequence of JSItems, which is a case class. This is just a compact version of the Item model that get's passed in to the client. We generate the items as json using jerkson which creates objects with the same fields as those in a case class. `@Html` tells Play not to escape the output and render it literally.
+Notice the input to template is a sequence of JSItems, which is a case class. This is just a compact version of the Item model that gets passed in to the client. We generate the items as json using jerkson which creates objects with the same fields as those in a case class. `@Html` tells Play not to escape the output and render it literally.
 
 ### Updating the model on the server
 
-Typically, we want the ability to update the model on the client side and update the server,
+Typically, we want the ability to update the model on the client side and update the server:
 
 ```coffeescript controllers.cofffee
 ItemsCtrl = ($scope, $http) ->
@@ -85,7 +85,7 @@ ItemsCtrl = ($scope, $http) ->
 
 ```
 
-The updateItems method uses AngularJS $http service which HTTP calls in [promises](http://docs.angularjs.org/api/ng.$q). It is similar in concept to a `scala.concurrent.Future` but with a much simpiler api. You can actually assign AngularJS promises to variables bound in the view, and the view will get updated asynchronously once the promise is resolved.
+The `updateItems` method uses AngularJS [$http](http://docs.angularjs.org/api/ng.$http) service which wraps ajax calls in [promises](http://docs.angularjs.org/api/ng.$q). It is similar in concept to a `scala.concurrent.Future` but with a much simpiler api. You can actually assign AngularJS promises to variables bound in the view, which cause a re-render asynchronously once the promise is resolved.
 
 On the server side, we can simply parse the Json back to the case class that it rendered from:
 
@@ -99,7 +99,7 @@ import com.codahale.jerkson.Json
 object Application extends Controller {
   def updateItems = Action { request =>
     val json = request.body.asJson.get.toString()
-    val items = Jsonparse[Seq[Item]](json)
+    val items = Json.parse[Seq[Item]](json)
     ...
   }
 }
@@ -107,4 +107,4 @@ object Application extends Controller {
 
 ### How to make all this easier
 
-With Scala 2.10 macros, you could imagine automatically creating the JS case classes from a subset of fields in the database Model and generating customizable CRUD controllers.
+With Scala 2.10 macros, you could imagine automatically creating the JS case classes from a subset of fields in the from the database model and generating customizable CRUD controllers.
