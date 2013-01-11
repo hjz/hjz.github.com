@@ -4,7 +4,7 @@
   <title><![CDATA[Category: CoffeeScript | Justin's Words of Random]]></title>
   <link href="http://hjz.github.com/blog/categories/coffeescript/atom.xml" rel="self"/>
   <link href="http://hjz.github.com/"/>
-  <updated>2013-01-10T21:38:53-08:00</updated>
+  <updated>2013-01-11T13:43:22-08:00</updated>
   <id>http://hjz.github.com/</id>
   <author>
     <name><![CDATA[Justin Zhu]]></name>
@@ -44,9 +44,6 @@
 <h2>Integration with Play 2 framework</h2>
 
 <h3>Bootstrapping AngularJS</h3>
-
-<!--more-->
-
 
 <p>Play is a rails inspired MVC framework built on the JVM. It has APIs for both Scala and Java and uses class reloading to quickly surface changes in the browser. A nice feature is the templating system that uses Scala to generate html. A template gets compiled to a Scala object and can be called from controllers, with the input type checked.</p>
 
@@ -123,6 +120,9 @@ val items = Json.parse[Seq[Item]](json)
 <p>  }
 }
 ```</p>
+
+<!--more-->
+
 
 <h3>How to make all this easier</h3>
 
