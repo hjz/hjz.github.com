@@ -1,30 +1,30 @@
 ---
 layout: post
-title: "Bootstrapping AngularJS with Play 2 and CoffeeScript"
-date: 2013-01-08 13:55
+title: "Bootstrapping AngularJS with Play 2"
+date: 2013-01-10 13:55
 comments: true
 categories: [AngularJS, Scala, CoffeeScript, Play]
 ---
 
-## AngularJS Intro
+## AngularJS Primer
 
-[AngularJS](angularjs.org) is a javascript framework by Google that makes 2-way data binding between DOM elements and JS objects seamless.
+[AngularJS](http://angularjs.org) is a javascript framework by Google that makes 2-way data binding between DOM elements and JS objects seamless.
 
-I've always been repulsed by the amount of hacks and lack of abstractions endemic to front-end development. AngularJS follows the Model View ViewModel pattern which aims to separate view code from application logic. This is achiveved through a ViewModel which exposes and connects objects in the model to elements in the view. For AngularJS, this is the `$scope` object.
+I've always been repulsed by the amount of hacks and lack of abstractions prevalent in front-end development. AngularJS follows the Model View ViewModel pattern which aims to separate view code from application logic. This is achiveved through a ViewModel which exposes and connects objects in the model to elements in the view. For AngularJS, this is the `$scope` object.
 
-For instance, to bind an input field to a variable `searchModel` on the scope:
+For example, to bind an input field to a variable `searchModel` on the scope:
 
 ```html
-<input type="text" ng-model="searchModel" />
+<input type="text" ng-model="searchModel">
 
 ```
 
-Any change to the input field is reflected in `$scope.searchModel`, and vice versa.
+Any change to the input field is reflected in `$scope.searchModel` and vice versa.
 
-Another neat feature of AngularJS is ability to create *directives* that extend html. For instance you can create an `on-focus` directive that calls a method when an element is focused.
+Another neat feature of AngularJS is the ability to create [directives](http://docs.angularjs.org/guide/directive) that extend html. For instance you can create an `on-focus` directive that calls a method when an element is focused.
 
 ```
-<input type="text" ng-model="searchModel" on-focus="searchModel = ''" />
+<input type="text" ng-model="searchModel" on-focus="searchModel = ''">
 ```
 
 The example above clears the input text when the element is focused. I'll touch more on creating directives in a future post.
