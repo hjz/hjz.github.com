@@ -1,12 +1,12 @@
 ---
 layout: post
-title: "Bootstrapping AngularJS with Play 2 and CoffeeScript"
-date: 2013-01-08 13:55
+title: "Bootstrapping AngularJS with Play 2"
+date: 2013-01-10 13:55
 comments: true
 categories: [AngularJS, Scala, CoffeeScript, Play]
 ---
 
-## AngularJS Intro
+## AngularJS Primer
 
 [AngularJS](angularjs.org) is a javascript framework by Google that makes 2-way data binding between DOM elements and JS objects seamless.
 
