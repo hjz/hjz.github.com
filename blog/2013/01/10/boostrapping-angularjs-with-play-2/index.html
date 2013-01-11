@@ -193,7 +193,7 @@
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>The <code>updateItems</code> method uses AngularJS <a href="http://docs.angularjs.org/api/ng.$http">$http</a> service which wraps ajax calls in <a href="http://docs.angularjs.org/api/ng.$q">promises</a>. It is similar in concept to a <code>scala.concurrent.Future</code> but with a much simpiler api. You can actually assign AngularJS promises to variables bound in the view, which cause a re-render asynchronously once the promise is resolved.</p>
+<p>The <code>updateItems</code> method uses AngularJS <a href="http://docs.angularjs.org/api/ng.$http">$http</a> service which wraps ajax calls in <a href="http://docs.angularjs.org/api/ng.$q">promises</a>. It is similar in concept to a <code>scala.concurrent.Future</code> but with a much simpiler api. You can actually assign AngularJS promises to variables bound in the view that will re-render asynchronously once the promise is resolved.</p>
 
 <p>On the server side, we can simply parse the Json back to the case class that it rendered from:</p>
 
@@ -227,7 +227,7 @@
 
 <h3>How to make all this easier</h3>
 
-<p>With Scala 2.10 macros, you could imagine automatically creating the JS case classes from a subset of fields in the from the database model and generating customizable CRUD controllers.</p>
+<p>With Scala 2.10 macros, you could imagine automatically creating the JS case classes from a subset of fields from the database model and generating customizable CRUD controllers.</p>
 </div>
 
 
