@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Justin's Words of Random]]></title>
+  <title><![CDATA[Justin's words of random]]></title>
   <link href="http://hjz.github.com/atom.xml" rel="self"/>
   <link href="http://hjz.github.com/"/>
-  <updated>2013-01-11T13:43:22-08:00</updated>
+  <updated>2013-01-13T15:21:08-08:00</updated>
   <id>http://hjz.github.com/</id>
   <author>
     <name><![CDATA[Justin Zhu]]></name>
@@ -12,6 +12,26 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Eat24 coupons the dirty way]]></title>
+    <link href="http://hjz.github.com/blog/2013/01/13/get-eat24hours-coupons-the-dirty-way/"/>
+    <updated>2013-01-13T15:13:00-08:00</updated>
+    <id>http://hjz.github.com/blog/2013/01/13/get-eat24hours-coupons-the-dirty-way</id>
+    <content type="html"><![CDATA[<p>I&#8217;ve been using <a href="http://eat24hours.com">Eat24</a> a lot recently to order food and they always seems to have coupons on their Facebook page.</p>
+
+<p>Here&#8217;s a one-liner to get the latest coupons. Simply fill in your access token:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>curl https://graph.facebook.com/eat24/feed?access_token<span class="o">={</span>your_token<span class="o">}</span> <span class="se">\</span>
+</span><span class='line'>| python -mjson.tool | grep <span class="s2">&quot;coupon code &#39;&quot;</span> <span class="se">\</span>
+</span><span class='line'>| sed -r <span class="s2">&quot;s/.*code &#39;([a-z]+)&#39;.*/\1/g&quot;</span> | sort | uniq
+</span></code></pre></td></tr></table></div></figure>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Bootstrapping AngularJS with Play 2]]></title>
