@@ -3,11 +3,11 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>Justin's words of random</title>
+	<title>Bootstrapping AngularJS with Play 2 - Justin's words of random</title>
 	<meta name="author" content="Justin Zhu">
 
 	
-	<meta name="description" content="I&#8217;ve been using Eat24 a lot recently to order food and they always seems to have coupons on their Facebook page. Here&#8217;s a one-liner to &hellip;">
+	<meta name="description" content="AngularJS Primer AngularJS is a javascript framework by Google that makes 2-way data binding between DOM elements and JS objects seamless. I&#8217;ve &hellip;">
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
@@ -91,69 +91,9 @@
 </script>
 
 	
-	<div id="content" class="inner">
-
-
-    <article class="post">
-	<h2 class="title">
-		
-		<a href="/blog/2013/01/13/get-eat24hours-coupons-the-dirty-way/">
-		
-			Eat24 Coupons the Dirty Way</a>
-	</h2>
-	<div class="entry-content">
-		<p>I&#8217;ve been using <a href="http://eat24hours.com">Eat24</a> a lot recently to order food and they always seems to have coupons on their Facebook page.</p>
-
-<p>Here&#8217;s a one-liner to get the latest coupons. Simply fill in your access token:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>curl https://graph.facebook.com/eat24/feed?access_token<span class="o">={</span>your_token<span class="o">}</span> <span class="se">\</span>
-</span><span class='line'>| python -mjson.tool | grep <span class="s2">&quot;coupon code &#39;&quot;</span> <span class="se">\</span>
-</span><span class='line'>| sed -r <span class="s2">&quot;s/.*code &#39;([a-z]+)&#39;.*/\1/g&quot;</span> | sort | uniq
-</span></code></pre></td></tr></table></div></figure>
-
-
-		
-		
-	</div>
-
-
-<div class="meta">
-	<div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-01-13T15:13:00-08:00" pubdate data-updated="true">Jan 13<span>th</span>, 2013</time></div>
-	<div class="tags">
-
-
-	<a class='category' href='/blog/categories/hacks/'>Hacks</a>
-
-
-</div>
-	
-</div></article>
-
-
-    <article class="post">
-	<h2 class="title">
-		
-		<a href="/blog/2013/01/10/boostrapping-angularjs-with-play-2/">
-		
-			Bootstrapping AngularJS With Play 2</a>
-	</h2>
-	<div class="entry-content">
-		<h2>AngularJS Primer</h2>
+	<div id="content" class="inner"><article class="post">
+	<h2 class="title">Bootstrapping AngularJS With Play 2</h2>
+	<div class="entry-content"><h2>AngularJS Primer</h2>
 
 <p><a href="http://angularjs.org">AngularJS</a> is a javascript framework by Google that makes 2-way data binding between DOM elements and JS objects seamless.</p>
 
@@ -284,10 +224,13 @@
 
 
 
+<!--more-->
 
-		
-		<a href="/blog/2013/01/10/boostrapping-angularjs-with-play-2/" class="more-link">Read on &rarr;</a>
-	</div>
+
+<h3>How to make all this easier</h3>
+
+<p>With Scala 2.10 macros, you could imagine automatically creating the JS case classes from a subset of fields from the database model and generating customizable CRUD controllers.</p>
+</div>
 
 
 <div class="meta">
@@ -314,11 +257,20 @@
 	
 </div></article>
 
-<nav id="pagenavi">
-    
-    
-    <div class="center"><a href="/blog/archives">Blog Archives</a></div>
-</nav></div>
+	<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+	
+	
+	<a class="addthis_button_tweet"></a>
+	
+	
+	<a class="addthis_counter addthis_pill_style"></a>
+	</div>
+  <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid="></script>
+</div>
+
+
+</div>
 	<footer id="footer" class="inner">Copyright &copy; 2013
 
     Justin Zhu
