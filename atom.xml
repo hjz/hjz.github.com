@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Justin's words of random]]></title>
+  <title><![CDATA[Justin's Words of Random]]></title>
   <link href="http://hjz.github.com/atom.xml" rel="self"/>
   <link href="http://hjz.github.com/"/>
-  <updated>2013-01-13T15:21:08-08:00</updated>
+  <updated>2013-01-18T02:33:39-08:00</updated>
   <id>http://hjz.github.com/</id>
   <author>
     <name><![CDATA[Justin Zhu]]></name>
