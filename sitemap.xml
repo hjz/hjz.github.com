@@ -2,15 +2,19 @@
 <urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>
     <url>
         <loc>http://hjz.github.com/blog/2013/01/10/boostrapping-angularjs-with-play-2/</loc>
-        <lastmod>2013-01-11T13:43:10-08:00</lastmod>
+        <lastmod>2013-01-18T02:33:09-08:00</lastmod>
+    </url>
+    <url>
+        <loc>http://hjz.github.com/blog/2013/01/13/get-eat24hours-coupons-the-dirty-way/</loc>
+        <lastmod>2013-01-18T02:30:14-08:00</lastmod>
     </url>
     <url>
         <loc>http://hjz.github.com/blog/archives/</loc>
-        <lastmod>2013-01-11T13:43:10-08:00</lastmod>
+        <lastmod>2013-01-18T02:33:09-08:00</lastmod>
     </url>
     <url>
         <loc>http://hjz.github.com/</loc>
-        <lastmod>2013-01-11T13:43:10-08:00</lastmod>
+        <lastmod>2013-01-18T02:33:09-08:00</lastmod>
     </url>
     <url>
         <loc>http://hjz.github.com/projects/</loc>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Hacks | Justin's Words of Random]]></title>
+  <link href="http://hjz.github.com/blog/categories/hacks/atom.xml" rel="self"/>
+  <link href="http://hjz.github.com/"/>
+  <updated>2013-01-18T02:33:39-08:00</updated>
+  <id>http://hjz.github.com/</id>
+  <author>
+    <name><![CDATA[Justin Zhu]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Eat24 coupons the dirty way]]></title>
+    <link href="http://hjz.github.com/blog/2013/01/13/get-eat24hours-coupons-the-dirty-way/"/>
+    <updated>2013-01-13T15:13:00-08:00</updated>
+    <id>http://hjz.github.com/blog/2013/01/13/get-eat24hours-coupons-the-dirty-way</id>
+    <content type="html"><![CDATA[<p>I've been using <a href="http://eat24hours.com">Eat24</a> a lot recently to order food and they always seems to have coupons on their Facebook page.</p>
+
+<p>Here's a one-liner to get the latest coupons. Simply fill in your access token:</p>
+
+<p><code>bash
+curl https://graph.facebook.com/eat24/feed?access_token={your_token} \
+| python -mjson.tool | grep "coupon code '" \
+| sed -r "s/.*code '([a-z]+)'.*/\1/g" | sort | uniq
+</code></p>
+]]></content>
+  </entry>
+  
+</feed>
