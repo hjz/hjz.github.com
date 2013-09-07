@@ -31,9 +31,7 @@ To solve this slowness, we had to off load the uniquify queries to the elasticse
 
 ### How tokenization affects your searches
 
-By default, Elasticsearch applies the [standard analyzer](http://www.elasticsearch.org/guide/reference/index-modules/analysis/standard-analyzer/) to string fields, create tokens for the value and is used in search.
-
-For the email address `justin.9000@gmail.com`, the standard analyzer creates three tokens: `justin`, `9000` and `gmail.com`. If we're to search the field with a terms facet to get unique email counts, the results will include unwanted results from the username and domain tokens.
+By default, Elasticsearch applies the [standard analyzer](http://www.elasticsearch.org/guide/reference/index-modules/analysis/standard-analyzer/) to fields. For the email address `justin.9000@gmail.com`, the standard analyzer creates three tokens: `justin`, `9000` and `gmail.com`. If we're to search the field with a terms facet to get unique email counts, the result will include an entry for each token, which inflates the unique count.
 
 The [Elasticsearch inquisitor plugin](https://github.com/polyfractal/elasticsearch-inquisitor) has a handy tool that shows tokenizations with different analyzers.
 
