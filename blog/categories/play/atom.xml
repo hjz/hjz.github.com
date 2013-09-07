@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Play | Justin's Words of Random]]></title>
   <link href="http://hjz.github.com/blog/categories/play/atom.xml" rel="self"/>
   <link href="http://hjz.github.com/"/>
-  <updated>2013-09-07T13:10:54-07:00</updated>
+  <updated>2013-09-07T14:07:50-07:00</updated>
   <id>http://hjz.github.com/</id>
   <author>
     <name><![CDATA[Justin Zhu]]></name>
@@ -43,9 +43,7 @@
 
 <h3>How tokenization affects your searches</h3>
 
-<p>By default, Elasticsearch applies the <a href="http://www.elasticsearch.org/guide/reference/index-modules/analysis/standard-analyzer/">standard analyzer</a> to string fields, create tokens for the value and is used in search.</p>
-
-<p>For the email address <code>justin.9000@gmail.com</code>, the standard analyzer creates three tokens: <code>justin</code>, <code>9000</code> and <code>gmail.com</code>. If we're to search the field with a terms facet to get unique email counts, the results will include unwanted results from the username and domain tokens.</p>
+<p>By default, Elasticsearch applies the <a href="http://www.elasticsearch.org/guide/reference/index-modules/analysis/standard-analyzer/">standard analyzer</a> to fields. For the email address <code>justin.9000@gmail.com</code>, the standard analyzer creates three tokens: <code>justin</code>, <code>9000</code> and <code>gmail.com</code>. If we're to search the field with a terms facet to get unique email counts, the result will include an entry for each token, which inflates the unique count.</p>
 
 <p>The <a href="https://github.com/polyfractal/elasticsearch-inquisitor">Elasticsearch inquisitor plugin</a> has a handy tool that shows tokenizations with different analyzers.</p>
 
