@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Play | Justin's Words of Random]]></title>
+  <link href="http://hjz.github.com/blog/categories/play/atom.xml" rel="self"/>
+  <link href="http://hjz.github.com/"/>
+  <updated>2013-09-07T13:10:54-07:00</updated>
+  <id>http://hjz.github.com/</id>
+  <author>
+    <name><![CDATA[Justin Zhu]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[How we sped up Elasticsearch queries by 100x - Part 1: Reindexing]]></title>
+    <link href="http://hjz.github.com/blog/2013/09/07/elasticsearch-reindexing-with-scala-and-play-2-framework/"/>
+    <updated>2013-09-07T10:58:00-07:00</updated>
+    <id>http://hjz.github.com/blog/2013/09/07/elasticsearch-reindexing-with-scala-and-play-2-framework</id>
+    <content type="html"><![CDATA[<h2>A Little Performance Story</h2>
+
+<p>At Iterable, we use Elasticsearch to store all our email campaign events. This includes, email sends, opens and clicks.</p>
+
+<p>For each event we attach the recipient email and display the events nicely in our campaign dashboard</p>
+
+<p><img src="http://static.iterable.com/iterabletoken/13-09-07-Screenshot%202013-09-07%2011.36.46.png" alt="Iterable Dashboard" /></p>
+
+<p>Notice <code>Unique Opens</code> column above. To calculate that, we need to fetch recipient emails from all the open events and do a unique operation on the emails.</p>
+
+<p>As you can imagine, this query is quite inefficient. It took upwards of 5 seconds to fetch 500,000 events, despite gigabit connections between our app server and Elasticsearch.</p>
+
+<p><code>
+[2013-08-26 20:57:33,856][WARN ][index.search.slowlog.fetch] [][][0] took[4.2s], took_millis[4207], types[emailOpen], stats[], search_type[QUERY_THEN_FETCH], total_shards[5], source[{"size":500000,"facets":{"dateFacet":{"date_histogram":{"field":"createdAt","interval":"minute"}}}}], extra_source[],
+[2013-08-26 20:57:34,293][WARN ][index.search.slowlog.fetch] [][][4] took[4.6s], took_millis[4659], types[emailOpen], stats[], search_type[QUERY_THEN_FETCH], total_shards[5], source[{"size":500000,"facets":{"dateFacet":{"date_histogram":{"field":"createdAt","interval":"minute"}}}}], extra_source[]
+</code></p>
+
+<p>This sloggishness slowed up in our <a href="http://www.elasticsearch.org/guide/reference/index-modules/slowlog/">elasticsearch's slow log</a>, excerpted above.</p>
+
+<p>To solve this slowness, we had to off load the uniquify queries to the elasticsearch server and simply return the counts. This came with a few challenges.</p>
+
+<h2>The Power of the Scroll</h2>
+
+<h3>How tokenization affects your searches</h3>
+
+<p>By default, Elasticsearch applies the <a href="http://www.elasticsearch.org/guide/reference/index-modules/analysis/standard-analyzer/">standard analyzer</a> to string fields, create tokens for the value and is used in search.</p>
+
+<p>For the email address <code>justin.9000@gmail.com</code>, the standard analyzer creates three tokens: <code>justin</code>, <code>9000</code> and <code>gmail.com</code>. If we're to search the field with a terms facet to get unique email counts, the results will include unwanted results from the username and domain tokens.</p>
+
+<p>The <a href="https://github.com/polyfractal/elasticsearch-inquisitor">Elasticsearch inquisitor plugin</a> has a handy tool that shows tokenizations with different analyzers.</p>
+
+<p><img src="http://static.iterable.com/iterabletoken/13-09-07-inquisitor-plugin.png" alt="Inquisitor analyzer tool" /></p>
+
+<h3>Taming the scroll with Scala</h3>
+
+<p>We must set the mapping of the email field to <code>not_analyzed</code> for Elasticsearch to return the email as one token. However, changing a mapping requires reindexing of the data for the new mapping to take effect.</p>
+
+<p>As of Elasticsearch 0.90.3, there is no built in redexing support. Instead, we rely on the <a href="http://www.elasticsearch.org/guide/reference/api/search/scroll/">scroll query</a> which essentially maintains the query results in memory, snapshotted to the data avaialble when you first made the query.</p>
+
+<p>Here's the code to do it in our favorite language, Scala</p>
+
+<p>```scala
+def reindexType(srcIndex: String, newIndex: String, searchType: String, client: TransportClient) = {
+  val scrollTime = new TimeValue(600000)
+  val scrollSize = 10000</p>
+
+<p>  // Setup the query
+  val query = client.prepareSearch(srcIndex)</p>
+
+<pre><code>.setTypes(searchType)
+.setScroll(scrollTime)
+.setQuery(QueryBuilders.matchAllQuery())
+.setSize(scrollSize).addFields("email", "_source")
+</code></pre>
+
+<p>  var scrollResp = query.execute().actionGet()</p>
+
+<p>  // Keep processing results if hits are non empty
+  while(scrollResp.getHits.hits().length > 0) {</p>
+
+<pre><code>// Retrieve items
+val bulkReq = client.prepareBulk()
+scrollResp.getHits.hits().foreach { hit =&gt;
+  Option(hit.field("email").getValue[String]).map { email =&gt;
+    bulkReq.add(
+      client.prepareIndex(newIndex, searchType).setSource(hit.source()).setParent(email)
+    )
+  }
+}
+
+scrollResp = client.prepareSearchScroll(scrollResp.getScrollId)
+  .setScroll(scrollTime).execute().actionGet()
+</code></pre>
+
+<p>  }</p>
+
+<p>}</p>
+
+<p>```</p>
+
+<p>The code above fetches the <code>_source</code> and <code>email</code> fields from each entry and reindexes to <code>newIndex</code>. Be sure to setup the new mapping properly on the new index first, otherwise all that was for now.</p>
+
+<p>In the next part, I'll go into how we ran the uniquification queries on the server side, now that the email field is not analyzed and treated as one token.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Bootstrapping AngularJS with Play 2]]></title>
+    <link href="http://hjz.github.com/blog/2013/01/10/boostrapping-angularjs-with-play-2/"/>
+    <updated>2013-01-10T13:55:00-08:00</updated>
+    <id>http://hjz.github.com/blog/2013/01/10/boostrapping-angularjs-with-play-2</id>
+    <content type="html"><![CDATA[<h2>AngularJS Primer</h2>
+
+<p><a href="http://angularjs.org">AngularJS</a> is a javascript framework by Google that makes 2-way data binding between DOM elements and JS objects seamless.</p>
+
+<p>I've always been repulsed by the amount of hacks and lack of abstractions prevalent in front-end development. AngularJS follows the Model View ViewModel pattern which aims to separate view code from application logic. This is achiveved through a ViewModel which exposes and connects objects in the model to elements in the view. For AngularJS, this is the <code>$scope</code> object.</p>
+
+<p>For example, to bind an input field to a variable <code>searchModel</code> on the scope:</p>
+
+<p>```html
+<input type="text" ng-model="searchModel"></p>
+
+<p>```</p>
+
+<p>Any change to the input field is reflected in <code>$scope.searchModel</code> and vice versa.</p>
+
+<p>Another neat feature of AngularJS is the ability to create <a href="http://docs.angularjs.org/guide/directive">directives</a> that extend html. For instance you can create an <code>on-focus</code> directive that calls a method when an element is focused.</p>
+
+<p><code>
+&lt;input type="text" ng-model="searchModel" on-focus="searchModel = ''"&gt;
+</code></p>
+
+<p>The example above clears the input text when the element is focused. I'll touch more on creating directives in a future post.</p>
+
+<h2>Integration with Play 2 framework</h2>
+
+<h3>Bootstrapping AngularJS</h3>
+
+<p>Play is a rails inspired MVC framework built on the JVM. It has APIs for both Scala and Java and uses class reloading to quickly surface changes in the browser. A nice feature is the templating system that uses Scala to generate html. A template gets compiled to a Scala object and can be called from controllers, with the input type checked.</p>
+
+<p>One pattern I've employed is bootstrapping AngularJS controllers in the template:</p>
+
+<p>```html items.scala.html
+@(items: Seq[JSItem])</p>
+
+<p>@import com.codahale.jerkson.Json</p>
+
+<script>
+var items = @Html(Json.generate(items));
+</script>
+
+
+<p>@main("Items Page") {</p>
+
+<div ng-controller="ItemsCtrl">
+   There are {{items.length}} items
+</div>
+
+
+<p>}
+```</p>
+
+<p>Then in the controller on the client:</p>
+
+<p>```coffeescript controllers.cofffee
+ItemsCtrl = ($scope) ->
+  $scope.items = items</p>
+
+<p>```</p>
+
+<p>Notice the input to template is a sequence of JSItems, which is a case class. This is just a compact version of the Item model that gets passed in to the client. We generate the items as json using jerkson which creates objects with the same fields as those in a case class. <code>@Html</code> tells Play not to escape the output and render it literally.</p>
+
+<h3>Updating the model on the server</h3>
+
+<p>Typically, we want the ability to update the model on the client side and update the server:</p>
+
+<p>```coffeescript controllers.cofffee
+ItemsCtrl = ($scope, $http) ->
+  $scope.items = items</p>
+
+<p>  $scope.updateItems = -></p>
+
+<pre><code>$http.post '/items', $scope.items
+  .success -&gt;
+    # Success callback
+  .error (data, status)-&gt;
+    $console.log "Failed with status #{status}, data: #{status}"
+</code></pre>
+
+<p>```</p>
+
+<p>The <code>updateItems</code> method uses AngularJS <a href="http://docs.angularjs.org/api/ng.$http">$http</a> service which wraps ajax calls in <a href="http://docs.angularjs.org/api/ng.$q">promises</a>. It is similar in concept to a <code>scala.concurrent.Future</code> but with a much simpiler api. You can actually assign AngularJS promises to variables bound in the view that will re-render asynchronously once the promise is resolved.</p>
+
+<p>On the server side, we can simply parse the Json back to the case class that it rendered from:</p>
+
+<p><code>scala routes
+POST /items Application.updateItems
+</code></p>
+
+<p>```scala Application.scala
+import com.codahale.jerkson.Json</p>
+
+<p>object Application extends Controller {
+  def updateItems = Action { request =></p>
+
+<pre><code>val json = request.body.asJson.get.toString()
+val items = Json.parse[Seq[Item]](json)
+...
+</code></pre>
+
+<p>  }
+}
+```</p>
+
+<!--more-->
+
+
+<h3>How to make all this easier</h3>
+
+<p>With Scala 2.10 macros, you could imagine automatically creating the JS case classes from a subset of fields from the database model and generating customizable CRUD controllers.</p>
+]]></content>
+  </entry>
+  
+</feed>

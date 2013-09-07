@@ -3,11 +3,11 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>Justin's Words of Random</title>
+	<title>Bootstrapping AngularJS with Play 2 - Justin's Words of Random</title>
 	<meta name="author" content="Justin Zhu">
 
 	
-	<meta name="description" content="A Little Performance Story At Iterable, we use Elasticsearch to store all our email campaign events. This includes, email sends, opens and clicks. &hellip;">
+	<meta name="description" content="AngularJS Primer AngularJS is a javascript framework by Google that makes 2-way data binding between DOM elements and JS objects seamless. I&#8217;ve &hellip;">
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
@@ -91,216 +91,9 @@
 </script>
 
 	
-	<div id="content" class="inner">
-
-
-    <article class="post">
-	<h2 class="title">
-		
-		<a href="/blog/2013/09/07/elasticsearch-reindexing-with-scala-and-play-2-framework/">
-		
-			How we sped up Elasticsearch queries by 100x - Part 1: Reindexing</a>
-	</h2>
-	<div class="entry-content">
-		<h2>A Little Performance Story</h2>
-
-<p>At Iterable, we use Elasticsearch to store all our email campaign events. This includes, email sends, opens and clicks.</p>
-
-<p>For each event we attach the recipient email and display the events nicely in our campaign dashboard</p>
-
-<p><img src="http://static.iterable.com/iterabletoken/13-09-07-Screenshot%202013-09-07%2011.36.46.png" alt="Iterable Dashboard" /></p>
-
-<p>Notice <code>Unique Opens</code> column above. To calculate that, we need to fetch recipient emails from all the open events and do a unique operation on the emails.</p>
-
-<p>As you can imagine, this query is quite inefficient. It took upwards of 5 seconds to fetch 500,000 events, despite gigabit connections between our app server and Elasticsearch.</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>[2013-08-26 20:57:33,856][WARN ][index.search.slowlog.fetch] [][][0] took[4.2s], took_millis[4207], types[emailOpen], stats[], search_type[QUERY_THEN_FETCH], total_shards[5], source[{"size":500000,"facets":{"dateFacet":{"date_histogram":{"field":"createdAt","interval":"minute"}}}}], extra_source[],
-</span><span class='line'>[2013-08-26 20:57:34,293][WARN ][index.search.slowlog.fetch] [][][4] took[4.6s], took_millis[4659], types[emailOpen], stats[], search_type[QUERY_THEN_FETCH], total_shards[5], source[{"size":500000,"facets":{"dateFacet":{"date_histogram":{"field":"createdAt","interval":"minute"}}}}], extra_source[]</span></code></pre></td></tr></table></div></figure>
-
-
-<p>This sloggishness slowed up in our <a href="http://www.elasticsearch.org/guide/reference/index-modules/slowlog/">elasticsearch&#8217;s slow log</a>, excerpted above.</p>
-
-<p>To solve this slowness, we had to off load the uniquify queries to the elasticsearch server and simply return the counts. This came with a few challenges.</p>
-
-<h2>The Power of the Scroll</h2>
-
-<h3>How tokenization affects your searches</h3>
-
-<p>By default, Elasticsearch applies the <a href="http://www.elasticsearch.org/guide/reference/index-modules/analysis/standard-analyzer/">standard analyzer</a> to string fields, create tokens for the value and is used in search.</p>
-
-<p>For the email address <code>justin.9000@gmail.com</code>, the standard analyzer creates three tokens: <code>justin</code>, <code>9000</code> and <code>gmail.com</code>. If we&#8217;re to search the field with a terms facet to get unique email counts, the results will include unwanted results from the username and domain tokens.</p>
-
-<p>The <a href="https://github.com/polyfractal/elasticsearch-inquisitor">Elasticsearch inquisitor plugin</a> has a handy tool that shows tokenizations with different analyzers.</p>
-
-<p><img src="http://static.iterable.com/iterabletoken/13-09-07-inquisitor-plugin.png" alt="Inquisitor analyzer tool" /></p>
-
-<h3>Taming the scroll with Scala</h3>
-
-<p>We must set the mapping of the email field to <code>not_analyzed</code> for Elasticsearch to return the email as one token. However, changing a mapping requires reindexing of the data for the new mapping to take effect.</p>
-
-<p>As of Elasticsearch 0.90.3, there is no built in redexing support. Instead, we rely on the <a href="http://www.elasticsearch.org/guide/reference/api/search/scroll/">scroll query</a> which essentially maintains the query results in memory, snapshotted to the data avaialble when you first made the query.</p>
-
-<p>Here&#8217;s the code to do it in our favorite language, Scala</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-</pre></td><td class='code'><pre><code class='scala'><span class='line'><span class="k">def</span> <span class="n">reindexType</span><span class="o">(</span><span class="n">srcIndex</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">newIndex</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">searchType</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">client</span><span class="k">:</span> <span class="kt">TransportClient</span><span class="o">)</span> <span class="k">=</span> <span class="o">{</span>
-</span><span class='line'>  <span class="k">val</span> <span class="n">scrollTime</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">TimeValue</span><span class="o">(</span><span class="mi">600000</span><span class="o">)</span>
-</span><span class='line'>  <span class="k">val</span> <span class="n">scrollSize</span> <span class="k">=</span> <span class="mi">10000</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="c1">// Setup the query</span>
-</span><span class='line'>  <span class="k">val</span> <span class="n">query</span> <span class="k">=</span> <span class="n">client</span><span class="o">.</span><span class="n">prepareSearch</span><span class="o">(</span><span class="n">srcIndex</span><span class="o">)</span>
-</span><span class='line'>    <span class="o">.</span><span class="n">setTypes</span><span class="o">(</span><span class="n">searchType</span><span class="o">)</span>
-</span><span class='line'>    <span class="o">.</span><span class="n">setScroll</span><span class="o">(</span><span class="n">scrollTime</span><span class="o">)</span>
-</span><span class='line'>    <span class="o">.</span><span class="n">setQuery</span><span class="o">(</span><span class="nc">QueryBuilders</span><span class="o">.</span><span class="n">matchAllQuery</span><span class="o">())</span>
-</span><span class='line'>    <span class="o">.</span><span class="n">setSize</span><span class="o">(</span><span class="n">scrollSize</span><span class="o">).</span><span class="n">addFields</span><span class="o">(</span><span class="s">&quot;email&quot;</span><span class="o">,</span> <span class="s">&quot;_source&quot;</span><span class="o">)</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="k">var</span> <span class="n">scrollResp</span> <span class="k">=</span> <span class="n">query</span><span class="o">.</span><span class="n">execute</span><span class="o">().</span><span class="n">actionGet</span><span class="o">()</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="c1">// Keep processing results if hits are non empty</span>
-</span><span class='line'>  <span class="k">while</span><span class="o">(</span><span class="n">scrollResp</span><span class="o">.</span><span class="n">getHits</span><span class="o">.</span><span class="n">hits</span><span class="o">().</span><span class="n">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>    <span class="c1">// Retrieve items</span>
-</span><span class='line'>    <span class="k">val</span> <span class="n">bulkReq</span> <span class="k">=</span> <span class="n">client</span><span class="o">.</span><span class="n">prepareBulk</span><span class="o">()</span>
-</span><span class='line'>    <span class="n">scrollResp</span><span class="o">.</span><span class="n">getHits</span><span class="o">.</span><span class="n">hits</span><span class="o">().</span><span class="n">foreach</span> <span class="o">{</span> <span class="n">hit</span> <span class="k">=&gt;</span>
-</span><span class='line'>      <span class="nc">Option</span><span class="o">(</span><span class="n">hit</span><span class="o">.</span><span class="n">field</span><span class="o">(</span><span class="s">&quot;email&quot;</span><span class="o">).</span><span class="n">getValue</span><span class="o">[</span><span class="kt">String</span><span class="o">]).</span><span class="n">map</span> <span class="o">{</span> <span class="n">email</span> <span class="k">=&gt;</span>
-</span><span class='line'>        <span class="n">bulkReq</span><span class="o">.</span><span class="n">add</span><span class="o">(</span>
-</span><span class='line'>          <span class="n">client</span><span class="o">.</span><span class="n">prepareIndex</span><span class="o">(</span><span class="n">newIndex</span><span class="o">,</span> <span class="n">searchType</span><span class="o">).</span><span class="n">setSource</span><span class="o">(</span><span class="n">hit</span><span class="o">.</span><span class="n">source</span><span class="o">()).</span><span class="n">setParent</span><span class="o">(</span><span class="n">email</span><span class="o">)</span>
-</span><span class='line'>        <span class="o">)</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="n">scrollResp</span> <span class="k">=</span> <span class="n">client</span><span class="o">.</span><span class="n">prepareSearchScroll</span><span class="o">(</span><span class="n">scrollResp</span><span class="o">.</span><span class="n">getScrollId</span><span class="o">)</span>
-</span><span class='line'>      <span class="o">.</span><span class="n">setScroll</span><span class="o">(</span><span class="n">scrollTime</span><span class="o">).</span><span class="n">execute</span><span class="o">().</span><span class="n">actionGet</span><span class="o">()</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>The code above fetches the <code>_source</code> and <code>email</code> fields from each entry and reindexes to <code>newIndex</code>. Be sure to setup the new mapping properly on the new index first, otherwise all that was for now.</p>
-
-<p>In the next part, I&#8217;ll go into how we ran the uniquification queries on the server side, now that the email field is not analyzed and treated as one token.</p>
-
-		
-		
-	</div>
-
-
-<div class="meta">
-	<div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-09-07T10:58:00-07:00" pubdate data-updated="true">Sep 7<span>th</span>, 2013</time></div>
-	<div class="tags">
-
-
-	<a class='category' href='/blog/categories/elasticsearch/'>Elasticsearch</a>, <a class='category' href='/blog/categories/performance/'>Performance</a>, <a class='category' href='/blog/categories/play/'>Play</a>, <a class='category' href='/blog/categories/scala/'>Scala</a>
-
-
-</div>
-	
-</div></article>
-
-
-    <article class="post">
-	<h2 class="title">
-		
-		<a href="/blog/2013/01/13/get-eat24hours-coupons-the-dirty-way/">
-		
-			Eat24 coupons the dirty way</a>
-	</h2>
-	<div class="entry-content">
-		<p>I&#8217;ve been using <a href="http://eat24hours.com">Eat24</a> a lot recently to order food and they always seems to have coupons on their Facebook page.</p>
-
-<p>Here&#8217;s a one-liner to get the latest coupons. Simply fill in your access token:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>curl https://graph.facebook.com/eat24/feed?access_token<span class="o">={</span>your_token<span class="o">}</span> <span class="se">\</span>
-</span><span class='line'>| python -mjson.tool | grep <span class="s2">&quot;coupon code &#39;&quot;</span> <span class="se">\</span>
-</span><span class='line'>| sed -r <span class="s2">&quot;s/.*code &#39;([a-z]+)&#39;.*/\1/g&quot;</span> | sort | uniq
-</span></code></pre></td></tr></table></div></figure>
-
-
-		
-		
-	</div>
-
-
-<div class="meta">
-	<div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-01-13T15:13:00-08:00" pubdate data-updated="true">Jan 13<span>th</span>, 2013</time></div>
-	<div class="tags">
-
-
-	<a class='category' href='/blog/categories/hacks/'>Hacks</a>
-
-
-</div>
-	
-</div></article>
-
-
-    <article class="post">
-	<h2 class="title">
-		
-		<a href="/blog/2013/01/10/boostrapping-angularjs-with-play-2/">
-		
-			Bootstrapping AngularJS with Play 2</a>
-	</h2>
-	<div class="entry-content">
-		<h2>AngularJS Primer</h2>
+	<div id="content" class="inner"><article class="post">
+	<h2 class="title">Bootstrapping AngularJS with Play 2</h2>
+	<div class="entry-content"><h2>AngularJS Primer</h2>
 
 <p><a href="http://angularjs.org">AngularJS</a> is a javascript framework by Google that makes 2-way data binding between DOM elements and JS objects seamless.</p>
 
@@ -431,10 +224,13 @@
 
 
 
+<!--more-->
 
-		
-		<a href="/blog/2013/01/10/boostrapping-angularjs-with-play-2/" class="more-link">Read on &rarr;</a>
-	</div>
+
+<h3>How to make all this easier</h3>
+
+<p>With Scala 2.10 macros, you could imagine automatically creating the JS case classes from a subset of fields from the database model and generating customizable CRUD controllers.</p>
+</div>
 
 
 <div class="meta">
@@ -461,11 +257,26 @@
 	
 </div></article>
 
-<nav id="pagenavi">
-    
-    
-    <div class="center"><a href="/blog/archives">Blog Archives</a></div>
-</nav></div>
+	<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+	
+	
+	<a class="addthis_button_tweet"></a>
+	
+	
+	<a class="addthis_counter addthis_pill_style"></a>
+	</div>
+  <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid="></script>
+</div>
+
+
+
+<section id="comment">
+    <h2 class="title">Comments</h2>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</section>
+</div>
 	<footer id="footer" class="inner">Copyright &copy; 2013
 
     Justin Zhu
@@ -484,7 +295,10 @@
       var disqus_shortname = 'zhum';
       
         
-        var disqus_script = 'count.js';
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://hjz.github.com/blog/2013/01/10/boostrapping-angularjs-with-play-2/';
+        var disqus_url = 'http://hjz.github.com/blog/2013/01/10/boostrapping-angularjs-with-play-2/';
+        var disqus_script = 'embed.js';
       
     (function () {
       var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
