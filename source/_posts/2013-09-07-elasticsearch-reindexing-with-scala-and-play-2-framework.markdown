@@ -6,19 +6,17 @@ comments: true
 categories: ['Elasticsearch', 'Play', 'Scala', 'Performance']
 ---
 
-## A little performance story
+## A Little Performance Story
 
-At Iterable, we use Elasticsearch to store all our email related events. This includes, email sends, opens, clicks, unsubscribes.
+At Iterable, we use Elasticsearch to store all our email campaign events. This includes, email sends, opens and clicks.
 
-For each event we attach the recipient email, timestamp, and additionaly for opens & clicks, the client ip and user agent.
-
-We then aggregate all the events and display them nicely in our campaign dashboard
+For each event we attach the recipient email and display the events nicely in our campaign dashboard
 
 ![Iterable Dashboard](http://static.iterable.com/iterabletoken/13-09-07-Screenshot%202013-09-07%2011.36.46.png)
 
-You'll see above the column, Unique Opens. To calculate that, we need to fetch recipient emails from all the open events and to a unique operation on the email.
+Notice `Unique Opens` column above. To calculate that, we need to fetch recipient emails from all the open events and do a unique operation on the emails.
 
-As you can imagine, this query is farily slow. It took upwards of 5 seconds to fetch 500,000 events to despite gig-e connections between our app server & elasticsearch.
+As you can imagine, this query is quite inefficient. It took upwards of 5 seconds to fetch 500,000 events, despite gigabit connections between our app server and Elasticsearch.
 
 ```
 [2013-08-26 20:57:33,856][WARN ][index.search.slowlog.fetch] [][][0] took[4.2s], took_millis[4207], types[emailOpen], stats[], search_type[QUERY_THEN_FETCH], total_shards[5], source[{"size":500000,"facets":{"dateFacet":{"date_histogram":{"field":"createdAt","interval":"minute"}}}}], extra_source[],
@@ -27,15 +25,25 @@ As you can imagine, this query is farily slow. It took upwards of 5 seconds to f
 
 This sloggishness slowed up in our [elasticsearch's slow log](http://www.elasticsearch.org/guide/reference/index-modules/slowlog/), excerpted above.
 
-To solve this slowness, we had to move the uniquify queries to the elasticsearch server and simply return the counts. This came with a few challenges.
+To solve this slowness, we had to off load the uniquify queries to the elasticsearch server and simply return the counts. This came with a few challenges.
 
-## The need for mapping a field as "not_analyzed"
+## The Power of the Scroll
+
+### How tokenization affects your searches
 
 By default, Elasticsearch applies the [standard analyzer](http://www.elasticsearch.org/guide/reference/index-modules/analysis/standard-analyzer/) to string fields, create tokens for the value and is used in search.
 
-For the email address `goku.9000@gmail.com`, the standard analyzer create 3 tokens: `justin`, `9000` and `gmail.com`. So if we're to use a terms facet to get unique email counts, we'd get bad results with tokens of the username and domain.
+For the email address `justin.9000@gmail.com`, the standard analyzer creates three tokens: `justin`, `9000` and `gmail.com`. If we're to search the field with a terms facet to get unique email counts, the results will include unwanted results from the username and domain tokens.
 
-To fix this, we simply set the mapping of our email field to "not_analyzed" which treats the whole email as one token. However, this requires reindexing of that field. As of Elasticsearch 0.90.3, there is no built in redexing support. You instead rely on a [scroll query](http://www.elasticsearch.org/guide/reference/api/search/scroll/) which essentially maintains the query results in memory, snapshotted to the data when you made the query.
+The [Elasticsearch inquisitor plugin](https://github.com/polyfractal/elasticsearch-inquisitor) has a handy tool that shows tokenizations with different analyzers.
+
+![Inquisitor analyzer tool](http://static.iterable.com/iterabletoken/13-09-07-inquisitor-plugin.png)
+
+### Taming the scroll with Scala
+
+We must set the mapping of the email field to `not_analyzed` for Elasticsearch to return the email as one token. However, changing a mapping requires reindexing of the data for the new mapping to take effect.
+
+As of Elasticsearch 0.90.3, there is no built in redexing support. Instead, we rely on the [scroll query](http://www.elasticsearch.org/guide/reference/api/search/scroll/) which essentially maintains the query results in memory, snapshotted to the data avaialble when you first made the query.
 
 Here's the code to do it in our favorite language, Scala
 
