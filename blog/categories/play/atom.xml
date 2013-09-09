@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Play | Justin's Words of Random]]></title>
   <link href="http://hjz.github.com/blog/categories/play/atom.xml" rel="self"/>
   <link href="http://hjz.github.com/"/>
-  <updated>2013-09-08T21:49:55-07:00</updated>
+  <updated>2013-09-08T21:58:31-07:00</updated>
   <id>http://hjz.github.com/</id>
   <author>
     <name><![CDATA[Justin Zhu]]></name>
@@ -12,113 +12,6 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
-  
-  <entry>
-    <title type="html"><![CDATA[How we sped up Elasticsearch queries by 100x - Part 1: Reindexing]]></title>
-    <link href="http://hjz.github.com/blog/2013/09/07/elasticsearch-reindexing-with-scala-and-play-2-framework/"/>
-    <updated>2013-09-07T10:58:00-07:00</updated>
-    <id>http://hjz.github.com/blog/2013/09/07/elasticsearch-reindexing-with-scala-and-play-2-framework</id>
-    <content type="html"><![CDATA[<h2>A Little Performance Story</h2>
-
-<p>At <a href="http://iterable.com">Iterable</a>, we use <a href="http://www.elasticsearch.org/">Elasticsearch</a> to store all our email campaign events. This includes email sends, opens and clicks.</p>
-
-<p>For each event, we attach the recipient email and display the events nicely in our campaign dashboard</p>
-
-<p><img src="http://static.iterable.com/iterabletoken/13-09-07-Screenshot%202013-09-07%2011.36.46.png" alt="Iterable Dashboard" /></p>
-
-<p>Notice <code>Unique Opens</code> column above. To calculate that, we need to fetch recipient emails from all the open events and do a unique operation on the emails. As you can imagine, this query is quite inefficient. It took upwards of 5 seconds to fetch 500,000 events, despite gigabit connections between our app server and Elasticsearch.</p>
-
-<p><code>
-[2013-08-26 20:57:33,856][WARN ][index.search.slowlog.fetch] [][][0] took[4.2s], took_millis[4207], types[emailOpen], stats[], search_type[QUERY_THEN_FETCH], total_shards[5], source[{"size":500000,"facets":{"dateFacet":{"date_histogram":{"field":"createdAt","interval":"minute"}}}}], extra_source[],
-[2013-08-26 20:57:34,293][WARN ][index.search.slowlog.fetch] [][][4] took[4.6s], took_millis[4659], types[emailOpen], stats[], search_type[QUERY_THEN_FETCH], total_shards[5], source[{"size":500000,"facets":{"dateFacet":{"date_histogram":{"field":"createdAt","interval":"minute"}}}}], extra_source[]
-</code></p>
-
-<p>This sluggishness slowed up in our <a href="http://www.elasticsearch.org/guide/reference/index-modules/slowlog/">Elasticsearch's slow log</a>, excerpted above.</p>
-
-<p>To solve this slowness, we had to off load the uniquify queries to the Elasticsearch server and simply return the counts, though this came with a few challenges.</p>
-
-<h2>The Power of the Scroll</h2>
-
-<h3>How tokenization affects your searches</h3>
-
-<p>By default, Elasticsearch applies the <a href="http://www.elasticsearch.org/guide/reference/index-modules/analysis/standard-analyzer/">standard analyzer</a> to fields. For the email address <code>justin.9000@gmail.com</code>, the standard analyzer creates three tokens: <code>justin</code>, <code>9000</code> and <code>gmail.com</code>. If we're to search the field with a terms facet to get unique email counts, the result will include an entry for each token, which inflates the unique count.</p>
-
-<p>The <a href="https://github.com/polyfractal/elasticsearch-inquisitor">Elasticsearch inquisitor plugin</a> has a handy tool that shows tokenizations with different analyzers.</p>
-
-<p><img src="http://static.iterable.com/iterabletoken/13-09-07-inquisitor-plugin.png" alt="Inquisitor analyzer tool" /></p>
-
-<h3>Taming the scroll with Scala</h3>
-
-<p>We must set the mapping of the email field to <code>not_analyzed</code> for Elasticsearch to return the email as one token. However, changing a mapping requires reindexing of the data for the new mapping to take effect.</p>
-
-<p>As of Elasticsearch 0.90.3, there is no built in reindexing support. Instead, we rely on the <a href="http://www.elasticsearch.org/guide/reference/api/search/scroll/">scroll query</a> which essentially maintains the query results in memory, for performance and consistency reasons. There will be some data loss in the next index which can be fixed with another scroll query.</p>
-
-<p>Here's the code to do it in our favorite language, Scala</p>
-
-<p>```scala
-def reindexType(srcIndex: String, newIndex: String, searchType: String, client: TransportClient) = {
-  val scrollTime = new TimeValue(600000)
-  val scrollSize = 10000</p>
-
-<p>  // Setup the query
-  val query = client.prepareSearch(srcIndex)</p>
-
-<pre><code>.setTypes(searchType)
-.setScroll(scrollTime)
-.setQuery(QueryBuilders.matchAllQuery())
-.setSize(scrollSize)
-</code></pre>
-
-<p>  var scrollResp = query.execute().actionGet()</p>
-
-<p>  // Keep processing results if hits are non empty
-  while(scrollResp.getHits.hits().length > 0) {</p>
-
-<pre><code>// Prepare a bulk reindex request
-val bulkReq = client.prepareBulk()
-scrollResp.getHits.hits().foreach { hit =&gt;
-  bulkReq.add(client.prepareIndex(newIndex, searchType).setSource(hit.source()))
-}
-
-// Reindex the hits
-bulkReq.execute().actionGet()
-
-// Get more entries from the old index
-scrollResp = client.prepareSearchScroll(scrollResp.getScrollId)
-  .setScroll(scrollTime).execute().actionGet()
-</code></pre>
-
-<p>  }</p>
-
-<p>}</p>
-
-<p>```</p>
-
-<p>The code above fetches the <code>_source</code> field from each entry and reindexes to <code>newIndex</code>. Be sure to set up the new mapping properly on the new index first, otherwise all that effort was for naught.</p>
-
-<p>Once the data is in the new index, the last step is to delete the old index and create an <a href="http://www.elasticsearch.org/guide/reference/api/admin-indices-aliases/">alias</a> to the new one.o</p>
-
-<p>```
-curl -XPOST 'http://localhost:9200/_aliases' -d '
-{</p>
-
-<pre><code>"actions" : [
-    { "add" : { "index" : "the_old_index", "alias" : "a_new_index" } }
-]
-</code></pre>
-
-<p>}'
-```</p>
-
-<p>You can create the alias through the <a href="http://mobz.github.io/elasticsearch-head/">ElasticSearch Head plugin</a> which also nicely displays the aliases on an index.</p>
-
-<p><img src="http://static.iterable.com/iterable/13-09-09-ElasticSearch_Head-2.png" alt="Elasticsearch Head Alias" /></p>
-
-<h2>Coming up next...</h2>
-
-<p>I'll go into how we off loaded the unique queries to the Elasticsearch server, now that the email field is properly treated as one token in the new index.</p>
-]]></content>
-  </entry>
   
   <entry>
     <title type="html"><![CDATA[Bootstrapping AngularJS with Play 2]]></title>

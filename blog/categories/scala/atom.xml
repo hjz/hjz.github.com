@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Scala | Justin's Words of Random]]></title>
   <link href="http://hjz.github.com/blog/categories/scala/atom.xml" rel="self"/>
   <link href="http://hjz.github.com/"/>
-  <updated>2013-09-08T21:49:55-07:00</updated>
+  <updated>2013-09-08T21:58:31-07:00</updated>
   <id>http://hjz.github.com/</id>
   <author>
     <name><![CDATA[Justin Zhu]]></name>
@@ -117,6 +117,8 @@ curl -XPOST 'http://localhost:9200/_aliases' -d '
 <h2>Coming up next...</h2>
 
 <p>I'll go into how we off loaded the unique queries to the Elasticsearch server, now that the email field is properly treated as one token in the new index.</p>
+
+<p>If this post piqued your interest on we're solving at <a href="http://iterable.com">Iterable</a>, drop me a note, justin at iterable.com.</p>
 ]]></content>
   </entry>
   
