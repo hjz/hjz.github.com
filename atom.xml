@@ -4,7 +4,7 @@
   <title><![CDATA[Justin's Words of Random]]></title>
   <link href="http://hjz.github.com/atom.xml" rel="self"/>
   <link href="http://hjz.github.com/"/>
-  <updated>2013-09-07T14:08:11-07:00</updated>
+  <updated>2013-09-08T21:47:13-07:00</updated>
   <id>http://hjz.github.com/</id>
   <author>
     <name><![CDATA[Justin Zhu]]></name>
@@ -20,15 +20,13 @@
     <id>http://hjz.github.com/blog/2013/09/07/elasticsearch-reindexing-with-scala-and-play-2-framework</id>
     <content type="html"><![CDATA[<h2>A Little Performance Story</h2>
 
-<p>At Iterable, we use Elasticsearch to store all our email campaign events. This includes, email sends, opens and clicks.</p>
+<p>At <a href="http://iterable.com">Iterable</a>, we use <a href="http://www.elasticsearch.org/">Elasticsearch</a> to store all our email campaign events. This includes email sends, opens and clicks.</p>
 
-<p>For each event we attach the recipient email and display the events nicely in our campaign dashboard</p>
+<p>For each event, we attach the recipient email and display the events nicely in our campaign dashboard</p>
 
 <p><img src="http://static.iterable.com/iterabletoken/13-09-07-Screenshot%202013-09-07%2011.36.46.png" alt="Iterable Dashboard" /></p>
 
-<p>Notice <code>Unique Opens</code> column above. To calculate that, we need to fetch recipient emails from all the open events and do a unique operation on the emails.</p>
-
-<p>As you can imagine, this query is quite inefficient. It took upwards of 5 seconds to fetch 500,000 events, despite gigabit connections between our app server and Elasticsearch.</p>
+<p>Notice <code>Unique Opens</code> column above. To calculate that, we need to fetch recipient emails from all the open events and do a unique operation on the emails. As you can imagine, this query is quite inefficient. It took upwards of 5 seconds to fetch 500,000 events, despite gigabit connections between our app server and Elasticsearch.</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -36,9 +34,9 @@
 </span><span class='line'>[2013-08-26 20:57:34,293][WARN ][index.search.slowlog.fetch] [][][4] took[4.6s], took_millis[4659], types[emailOpen], stats[], search_type[QUERY_THEN_FETCH], total_shards[5], source[{"size":500000,"facets":{"dateFacet":{"date_histogram":{"field":"createdAt","interval":"minute"}}}}], extra_source[]</span></code></pre></td></tr></table></div></figure>
 
 
-<p>This sloggishness slowed up in our <a href="http://www.elasticsearch.org/guide/reference/index-modules/slowlog/">elasticsearch&#8217;s slow log</a>, excerpted above.</p>
+<p>This sluggishness slowed up in our <a href="http://www.elasticsearch.org/guide/reference/index-modules/slowlog/">Elasticsearch&#8217;s slow log</a>, excerpted above.</p>
 
-<p>To solve this slowness, we had to off load the uniquify queries to the elasticsearch server and simply return the counts. This came with a few challenges.</p>
+<p>To solve this slowness, we had to off load the uniquify queries to the Elasticsearch server and simply return the counts, though this came with a few challenges.</p>
 
 <h2>The Power of the Scroll</h2>
 
@@ -54,7 +52,7 @@
 
 <p>We must set the mapping of the email field to <code>not_analyzed</code> for Elasticsearch to return the email as one token. However, changing a mapping requires reindexing of the data for the new mapping to take effect.</p>
 
-<p>As of Elasticsearch 0.90.3, there is no built in redexing support. Instead, we rely on the <a href="http://www.elasticsearch.org/guide/reference/api/search/scroll/">scroll query</a> which essentially maintains the query results in memory, snapshotted to the data avaialble when you first made the query.</p>
+<p>As of Elasticsearch 0.90.3, there is no built in reindexing support. Instead, we rely on the <a href="http://www.elasticsearch.org/guide/reference/api/search/scroll/">scroll query</a> which essentially maintains the query results in memory, for performance and consistency reasons. There will be some data loss in the next index which can be fixed with another scroll query.</p>
 
 <p>Here&#8217;s the code to do it in our favorite language, Scala</p>
 
@@ -97,22 +95,22 @@
 </span><span class='line'>    <span class="o">.</span><span class="n">setTypes</span><span class="o">(</span><span class="n">searchType</span><span class="o">)</span>
 </span><span class='line'>    <span class="o">.</span><span class="n">setScroll</span><span class="o">(</span><span class="n">scrollTime</span><span class="o">)</span>
 </span><span class='line'>    <span class="o">.</span><span class="n">setQuery</span><span class="o">(</span><span class="nc">QueryBuilders</span><span class="o">.</span><span class="n">matchAllQuery</span><span class="o">())</span>
-</span><span class='line'>    <span class="o">.</span><span class="n">setSize</span><span class="o">(</span><span class="n">scrollSize</span><span class="o">).</span><span class="n">addFields</span><span class="o">(</span><span class="s">&quot;email&quot;</span><span class="o">,</span> <span class="s">&quot;_source&quot;</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">.</span><span class="n">setSize</span><span class="o">(</span><span class="n">scrollSize</span><span class="o">)</span>
 </span><span class='line'>
 </span><span class='line'>  <span class="k">var</span> <span class="n">scrollResp</span> <span class="k">=</span> <span class="n">query</span><span class="o">.</span><span class="n">execute</span><span class="o">().</span><span class="n">actionGet</span><span class="o">()</span>
 </span><span class='line'>
 </span><span class='line'>  <span class="c1">// Keep processing results if hits are non empty</span>
 </span><span class='line'>  <span class="k">while</span><span class="o">(</span><span class="n">scrollResp</span><span class="o">.</span><span class="n">getHits</span><span class="o">.</span><span class="n">hits</span><span class="o">().</span><span class="n">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>    <span class="c1">// Retrieve items</span>
+</span><span class='line'>    <span class="c1">// Prepare a bulk reindex request</span>
 </span><span class='line'>    <span class="k">val</span> <span class="n">bulkReq</span> <span class="k">=</span> <span class="n">client</span><span class="o">.</span><span class="n">prepareBulk</span><span class="o">()</span>
 </span><span class='line'>    <span class="n">scrollResp</span><span class="o">.</span><span class="n">getHits</span><span class="o">.</span><span class="n">hits</span><span class="o">().</span><span class="n">foreach</span> <span class="o">{</span> <span class="n">hit</span> <span class="k">=&gt;</span>
-</span><span class='line'>      <span class="nc">Option</span><span class="o">(</span><span class="n">hit</span><span class="o">.</span><span class="n">field</span><span class="o">(</span><span class="s">&quot;email&quot;</span><span class="o">).</span><span class="n">getValue</span><span class="o">[</span><span class="kt">String</span><span class="o">]).</span><span class="n">map</span> <span class="o">{</span> <span class="n">email</span> <span class="k">=&gt;</span>
-</span><span class='line'>        <span class="n">bulkReq</span><span class="o">.</span><span class="n">add</span><span class="o">(</span>
-</span><span class='line'>          <span class="n">client</span><span class="o">.</span><span class="n">prepareIndex</span><span class="o">(</span><span class="n">newIndex</span><span class="o">,</span> <span class="n">searchType</span><span class="o">).</span><span class="n">setSource</span><span class="o">(</span><span class="n">hit</span><span class="o">.</span><span class="n">source</span><span class="o">()).</span><span class="n">setParent</span><span class="o">(</span><span class="n">email</span><span class="o">)</span>
-</span><span class='line'>        <span class="o">)</span>
-</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      <span class="n">bulkReq</span><span class="o">.</span><span class="n">add</span><span class="o">(</span><span class="n">client</span><span class="o">.</span><span class="n">prepareIndex</span><span class="o">(</span><span class="n">newIndex</span><span class="o">,</span> <span class="n">searchType</span><span class="o">).</span><span class="n">setSource</span><span class="o">(</span><span class="n">hit</span><span class="o">.</span><span class="n">source</span><span class="o">()))</span>
 </span><span class='line'>    <span class="o">}</span>
 </span><span class='line'>
+</span><span class='line'>    <span class="c1">// Reindex the hits</span>
+</span><span class='line'>    <span class="n">bulkReq</span><span class="o">.</span><span class="n">execute</span><span class="o">().</span><span class="n">actionGet</span><span class="o">()</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// Get more entries from the old index</span>
 </span><span class='line'>    <span class="n">scrollResp</span> <span class="k">=</span> <span class="n">client</span><span class="o">.</span><span class="n">prepareSearchScroll</span><span class="o">(</span><span class="n">scrollResp</span><span class="o">.</span><span class="n">getScrollId</span><span class="o">)</span>
 </span><span class='line'>      <span class="o">.</span><span class="n">setScroll</span><span class="o">(</span><span class="n">scrollTime</span><span class="o">).</span><span class="n">execute</span><span class="o">().</span><span class="n">actionGet</span><span class="o">()</span>
 </span><span class='line'>  <span class="o">}</span>
@@ -121,9 +119,32 @@
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>The code above fetches the <code>_source</code> and <code>email</code> fields from each entry and reindexes to <code>newIndex</code>. Be sure to setup the new mapping properly on the new index first, otherwise all that was for now.</p>
+<p>The code above fetches the <code>_source</code> field from each entry and reindexes to <code>newIndex</code>. Be sure to set up the new mapping properly on the new index first, otherwise all that effort was for naught.</p>
 
-<p>In the next part, I&#8217;ll go into how we ran the uniquification queries on the server side, now that the email field is not analyzed and treated as one token.</p>
+<p>Once the data is in the new index, the last step is to delete the old index and create an <a href="http://www.elasticsearch.org/guide/reference/api/admin-indices-aliases/">alias</a> to the new one.o</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='scala'><span class='line'><span class="n">curl</span> <span class="o">-</span><span class="nc">XPOST</span> <span class="-Symbol">&#39;http</span><span class="o">://</span><span class="n">localhost</span><span class="k">:</span><span class="err">9200</span><span class="kt">/</span><span class="k">_</span><span class="kt">aliases</span><span class="err">&#39;</span> <span class="kt">-d</span> <span class="err">&#39;</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="err">&quot;</span><span class="kt">actions</span><span class="err">&quot;</span> <span class="kt">:</span> <span class="o">[</span>
+</span><span class='line'>        <span class="o">{</span> <span class="err">&quot;</span><span class="kt">add</span><span class="err">&quot;</span> <span class="kt">:</span> <span class="o">{</span> <span class="err">&quot;</span><span class="kt">index</span><span class="err">&quot;</span> <span class="kt">:</span> <span class="err">&quot;</span><span class="kt">the_old_index</span><span class="err">&quot;</span>, <span class="err">&quot;</span><span class="kt">alias</span><span class="err">&quot;</span> <span class="kt">:</span> <span class="err">&quot;</span><span class="kt">a_new_index</span><span class="err">&quot;</span> <span class="o">}</span> <span class="o">}</span>
+</span><span class='line'>    <span class="o">]</span>
+</span><span class='line'><span class="o">}</span><span class="err">&#39;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>You can create the alias through the <a href="http://mobz.github.io/elasticsearch-head/">ElasticSearch Head plugin</a> which also nicely displays the aliases on an index.</p>
+
+<p><img src="http://static.iterable.com/iterable/13-09-09-ElasticSearch_Head-2.png" alt="Elasticsearch Head Alias" /></p>
+
+<h2>Coming up next&#8230;</h2>
+
+<p>I&#8217;ll go into how we ran the uniquification queries on the server side, now that the email field is not analyzed and treated as one token in the new index.</p>
 ]]></content>
   </entry>
   
