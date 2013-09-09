@@ -97,3 +97,5 @@ You can create the alias through the [ElasticSearch Head plugin](http://mobz.git
 ## Coming up next...
 
 I'll go into how we off loaded the unique queries to the Elasticsearch server, now that the email field is properly treated as one token in the new index.
+
+If this post piqued your interest on we're solving at [Iterable](http://iterable.com), drop me a note, justin at iterable.com.
