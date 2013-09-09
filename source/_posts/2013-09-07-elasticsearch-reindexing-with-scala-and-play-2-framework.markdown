@@ -3,7 +3,7 @@ layout: post
 title: "How we sped up Elasticsearch queries by 100x - Part 1: Reindexing"
 date: 2013-09-07 10:58
 comments: true
-categories: ['Elasticsearch', 'Play', 'Scala', 'Performance']
+categories: ['Elasticsearch', 'Scala', 'Performance']
 ---
 
 ## A Little Performance Story
