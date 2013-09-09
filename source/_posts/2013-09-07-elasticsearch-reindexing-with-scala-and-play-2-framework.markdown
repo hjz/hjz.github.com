@@ -53,22 +53,22 @@ def reindexType(srcIndex: String, newIndex: String, searchType: String, client: 
     .setTypes(searchType)
     .setScroll(scrollTime)
     .setQuery(QueryBuilders.matchAllQuery())
-    .setSize(scrollSize).addFields("email", "_source")
+    .setSize(scrollSize)
 
   var scrollResp = query.execute().actionGet()
 
   // Keep processing results if hits are non empty
   while(scrollResp.getHits.hits().length > 0) {
-    // Retrieve items
+    // Prepare a bulk reindex request
     val bulkReq = client.prepareBulk()
     scrollResp.getHits.hits().foreach { hit =>
-      Option(hit.field("email").getValue[String]).map { email =>
-        bulkReq.add(
-          client.prepareIndex(newIndex, searchType).setSource(hit.source()).setParent(email)
-        )
-      }
+      bulkReq.add(client.prepareIndex(newIndex, searchType).setSource(hit.source()))
     }
 
+    // Reindex the hits
+    bulkReq.execute().actionGet()
+
+    // Get more entries from the old index
     scrollResp = client.prepareSearchScroll(scrollResp.getScrollId)
       .setScroll(scrollTime).execute().actionGet()
   }
@@ -77,9 +77,9 @@ def reindexType(srcIndex: String, newIndex: String, searchType: String, client: 
 
 ```
 
-The code above fetches the `_source` and `email` fields from each entry and reindexes to `newIndex`. Be sure to set up the new mapping properly on the new index first, otherwise all that effort was for naught.
+The code above fetches the `_source` field from each entry and reindexes to `newIndex`. Be sure to set up the new mapping properly on the new index first, otherwise all that effort was for naught.
 
-Once the data is in the new index, the last step is to delete the old index and create an [alias](http://www.elasticsearch.org/guide/reference/api/admin-indices-aliases/) to the new one.
+Once the data is in the new index, the last step is to delete the old index and create an [alias](http://www.elasticsearch.org/guide/reference/api/admin-indices-aliases/) to the new one.o
 
 ```
 curl -XPOST 'http://localhost:9200/_aliases' -d '
@@ -96,4 +96,4 @@ You can create the alias through the [ElasticSearch Head plugin](http://mobz.git
 
 ## Coming up next...
 
-In the next part, I'll go into how we ran the uniquification queries on the server side, now that the email field is not analyzed and treated as one token.
+I'll go into how we ran the uniquification queries on the server side, now that the email field is not analyzed and treated as one token in the new index.
