@@ -4,7 +4,7 @@
   <title><![CDATA[Justin's Words of Random]]></title>
   <link href="http://hjz.github.com/atom.xml" rel="self"/>
   <link href="http://hjz.github.com/"/>
-  <updated>2013-09-08T21:58:31-07:00</updated>
+  <updated>2013-09-08T22:16:59-07:00</updated>
   <id>http://hjz.github.com/</id>
   <author>
     <name><![CDATA[Justin Zhu]]></name>
@@ -85,7 +85,6 @@
 <span class='line-number'>27</span>
 <span class='line-number'>28</span>
 <span class='line-number'>29</span>
-<span class='line-number'>30</span>
 </pre></td><td class='code'><pre><code class='scala'><span class='line'><span class="k">def</span> <span class="n">reindexType</span><span class="o">(</span><span class="n">srcIndex</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">newIndex</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">searchType</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">client</span><span class="k">:</span> <span class="kt">TransportClient</span><span class="o">)</span> <span class="k">=</span> <span class="o">{</span>
 </span><span class='line'>  <span class="k">val</span> <span class="n">scrollTime</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">TimeValue</span><span class="o">(</span><span class="mi">600000</span><span class="o">)</span>
 </span><span class='line'>  <span class="k">val</span> <span class="n">scrollSize</span> <span class="k">=</span> <span class="mi">10000</span>
@@ -114,7 +113,6 @@
 </span><span class='line'>    <span class="n">scrollResp</span> <span class="k">=</span> <span class="n">client</span><span class="o">.</span><span class="n">prepareSearchScroll</span><span class="o">(</span><span class="n">scrollResp</span><span class="o">.</span><span class="n">getScrollId</span><span class="o">)</span>
 </span><span class='line'>      <span class="o">.</span><span class="n">setScroll</span><span class="o">(</span><span class="n">scrollTime</span><span class="o">).</span><span class="n">execute</span><span class="o">().</span><span class="n">actionGet</span><span class="o">()</span>
 </span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>
 </span><span class='line'><span class="o">}</span>
 </span></code></pre></td></tr></table></div></figure>
 
@@ -146,7 +144,7 @@
 
 <p>I&#8217;ll go into how we off loaded the unique queries to the Elasticsearch server, now that the email field is properly treated as one token in the new index.</p>
 
-<p>If this post piqued your interest on we&#8217;re solving at <a href="http://iterable.com">Iterable</a>, drop me a note, justin at iterable.com.</p>
+<p>If this post piqued your interest on what we&#8217;re solving at <a href="http://iterable.com">Iterable</a>, drop me a note, justin at iterable.com.</p>
 ]]></content>
   </entry>
   
